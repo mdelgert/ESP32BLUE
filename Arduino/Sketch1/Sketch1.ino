@@ -23,7 +23,7 @@ class MyCallbacks : public NimBLECharacteristicCallbacks {
     void onWrite(NimBLECharacteristic* pCharacteristic) {
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0) {
-            Serial.print("ReceivedX: ");
+            Serial.print("Received: ");
             Serial.println(value.c_str());
         }
     }
@@ -31,6 +31,9 @@ class MyCallbacks : public NimBLECharacteristicCallbacks {
 
 void setup() {
     Serial.begin(115200);
+    while (!Serial) {// Wait for serial port to connect}
+    Serial.println("Starting ESP32 BLE server...");
+    
     NimBLEDevice::init("ESP32_S3");
     
     NimBLEServer* pServer = NimBLEDevice::createServer();
