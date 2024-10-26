@@ -49,11 +49,14 @@ namespace ConsoleBle
                 return;
             }
 
+            int counter = 1; // Initialize a counter variable
+
             while (true)
             {
-                var message = Encoding.UTF8.GetBytes("hello");
+                var message = Encoding.UTF8.GetBytes($"hello {counter}");
                 await _writeCharacteristic.WriteAsync(message);
-                Console.WriteLine("Sent: hello");
+                Console.WriteLine($"Sent: hello {counter}");
+                counter++; // Increment the counter for the next message
                 await Task.Delay(1000); // Send every second
             }
         }
