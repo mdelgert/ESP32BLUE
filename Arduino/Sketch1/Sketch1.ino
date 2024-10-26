@@ -1,66 +1,56 @@
 #include <NimBLEDevice.h>
 
-NimBLEServer* pServer = nullptr;
-NimBLECharacteristic* pCharacteristic = nullptr;
-
-#define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
-
+NimBLECharacteristic* pCharacteristic;
 bool deviceConnected = false;
 
-// Callback class for connection events
+// Replace these with your actual UUIDs
+#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"         // Example: "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"  // Example: "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+
 class MyServerCallbacks : public NimBLEServerCallbacks {
     void onConnect(NimBLEServer* pServer) {
         deviceConnected = true;
-        Serial.println("Device connected");
+        Serial.println("Device connected!");
     }
 
     void onDisconnect(NimBLEServer* pServer) {
         deviceConnected = false;
-        Serial.println("Device disconnected, restarting advertising");
-        pServer->startAdvertising(); // Restart advertising
+        Serial.println("Device disconnected!");
+    }
+};
+
+class MyCallbacks : public NimBLECharacteristicCallbacks {
+    void onWrite(NimBLECharacteristic* pCharacteristic) {
+        std::string value = pCharacteristic->getValue();
+        if (value.length() > 0) {
+            Serial.print("Received: ");
+            Serial.println(value.c_str());
+        }
     }
 };
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("Setting up BLE server...");
-
-    // Initialize NimBLE
-    NimBLEDevice::init("ESP32_S3_BLE");
-    NimBLEDevice::setPower(ESP_PWR_LVL_P9); // Optional: adjust transmit power
-
-    // Create BLE server and set connection callbacks
-    pServer = NimBLEDevice::createServer();
+    NimBLEDevice::init("ESP32_S3");
+    
+    NimBLEServer* pServer = NimBLEDevice::createServer();
     pServer->setCallbacks(new MyServerCallbacks());
 
-    // Create BLE service and characteristic
     NimBLEService* pService = pServer->createService(SERVICE_UUID);
     pCharacteristic = pService->createCharacteristic(
         CHARACTERISTIC_UUID,
-        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY
+        NIMBLE_PROPERTY::WRITE
     );
+    pCharacteristic->setCallbacks(new MyCallbacks());
 
-    // Set initial characteristic value
-    pCharacteristic->setValue("Hello from ESP32!");
-
-    // Start the service
     pService->start();
-
-    // Start advertising
     NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising();
     pAdvertising->addServiceUUID(SERVICE_UUID);
-    pAdvertising->setScanResponse(true); // Include additional advertising data
     pAdvertising->start();
-
-    Serial.println("BLE server is running and advertising...");
+    
+    Serial.println("Waiting for a client to connect...");
 }
 
 void loop() {
-    if (deviceConnected) {
-        // Send a notification if connected
-        pCharacteristic->setValue("Connected to ESP32");
-        pCharacteristic->notify(); // Send notification to client
-    }
-    delay(1000); // Interval between notifications
+    // No additional code needed in the loop
 }
