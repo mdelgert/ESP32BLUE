@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Web Bluetooth Example</title>
+</head>
+<body>
+    <h1>Connect to ESP32 via Web Bluetooth</h1>
+    <button id="connect">Connect to ESP32</button>
+    <p id="status">Status: Not connected</p>
+    <p id="data">Data from ESP32: N/A</p>
+
+    <script>
+        const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
+        const CHARACTERISTIC_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
+
+        document.getElementById('connect').addEventListener('click', async () => {
+            try {
+                // Request Bluetooth device
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [SERVICE_UUID] }]
+                });
+
+                document.getElementById('status').innerText = 'Connecting...';
+                
+                // Connect to GATT server
+                const server = await device.gatt.connect();
+                
+                // Get service and characteristic
+                const service = await server.getPrimaryService(SERVICE_UUID);
+                const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+
+                // Read initial value from characteristic
+                const value = await characteristic.readValue();
+                document.getElementById('data').innerText = 
+                    'Data from ESP32: ' + new TextDecoder().decode(value);
+
+                // Update status
+                document.getElementById('status').innerText = 'Connected';
+
+                // Optional: Subscribe to notifications (if supported by characteristic)
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', event => {
+                    const newValue = new TextDecoder().decode(event.target.value);
+                    document.getElementById('data').innerText = 'Data from ESP32: ' + newValue;
+                });
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('status').innerText = 'Error: ' + error;
+            }
+        });
+    </script>
+</body>
+</html>
