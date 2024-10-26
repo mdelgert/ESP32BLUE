@@ -23,7 +23,7 @@ class MyCallbacks : public NimBLECharacteristicCallbacks {
     void onWrite(NimBLECharacteristic* pCharacteristic) {
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0) {
-            Serial.print("Received: ");
+            Serial.print("ReceivedX: ");
             Serial.println(value.c_str());
         }
     }
