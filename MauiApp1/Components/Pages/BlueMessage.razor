@@ -1,0 +1,29 @@
+﻿@page "/bluemessage"
+
+@inject MauiApp1.Services.BluetoothService BluetoothService
+
+<h1>Blue Message</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCountAndSendMessage">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await BluetoothService.StartScanningAsync();
+    }
+
+    private async Task IncrementCountAndSendMessage()
+    {
+        currentCount++;
+        await BluetoothService.SendMessageAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await BluetoothService.StopScanningAsync();
+    }
+}
