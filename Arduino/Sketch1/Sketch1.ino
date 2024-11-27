@@ -31,7 +31,15 @@ class MyCallbacks : public NimBLECharacteristicCallbacks {
 
 void setup() {
     Serial.begin(115200);
-    while (!Serial) {// Wait for serial port to connect}
+    
+    // Wait for serial port to connect
+    while (!Serial) {
+    }
+    
+    //while (!Serial) {
+    //delay(10);
+    //}
+    
     Serial.println("Starting ESP32 BLE server...");
     
     NimBLEDevice::init("ESP32_S3");
